@@ -68,8 +68,8 @@ class Point(namedtuple("_Point", ("x", "y"))):
 
     @classmethod
     def generator(cls):
-        x = 16540640123574156134436876038791482806971768689494387082833631921987005038935
-        y = 20819045374670962167435360035096875258406992893633759881276124905556507972311
+        x = 5299619240641551281634865583518297030282874472190772894086521144482721001553
+        y = 16950150798460657717958625567821834550301663161624707787222815936182638968203
         return Point(FQ(x), FQ(y))
 
     @staticmethod
@@ -206,3 +206,17 @@ class Point(namedtuple("_Point", ("x", "y"))):
         sign = y >> 255
         y &= (1 << 255) - 1
         return cls.from_y(FQ(y), sign)
+
+pub_x = 4342719913949491028786768530115087822524712248835451589697801404893164183326
+pub_y = 4826523245007015323400664741523384119579596407052839571721035538011798951543
+pub_point = Point(FQ(pub_x), FQ(pub_y))
+
+
+def find_order():
+    accumulator = Point(FQ(pub_x), FQ(pub_y))
+    for i in range(1, 1_000_000):
+        accumulator = accumulator.add(pub_point)
+        if accumulator == pub_point:
+            print("Found order:")
+            print(i - 1)
+            return

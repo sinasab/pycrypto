@@ -30,6 +30,7 @@ based on: https://github.com/HarryR/ethsnarks
 """
 
 import hashlib
+import poseidon
 from collections import namedtuple
 from math import ceil, log2
 from os import urandom
@@ -111,3 +112,57 @@ def hash_to_scalar(*args):
     p = b"".join(to_bytes(_) for _ in args)
     digest = hashlib.sha256(p).digest()
     return int(digest.hex(), 16)  # mod JUBJUB_E here for optimized implementation
+
+def poseidon_hash_to_scalar(input_vec):
+    poseidon_simple, _t = poseidon.parameters.case_simple()
+    digest = poseidon_simple.run_hash(input_vec)
+    print("Output: ", hex(int(digest)))
+    return int(digest)
+
+pub_x = 4342719913949491028786768530115087822524712248835451589697801404893164183326
+pub_y = 4826523245007015323400664741523384119579596407052839571721035538011798951543
+pub_point = Point(FQ(pub_x), FQ(pub_y))
+msg = 1234567890123456789012354680980981230981231098
+
+def poseidon_helper(r):
+    R = Point.generator().mult(r)
+    input_vec = [
+        R.x.n,
+        R.y.n,
+        pub_x,
+        pub_y,
+        msg
+    ]
+    print(input_vec)
+    return poseidon_hash_to_scalar(input_vec)
+
+def try_find_sig():
+    for i in range(1, 1000):
+        H = poseidon_helper(i)
+        if H % 7 == 0:
+            print("Found working r and R")
+            print("r: ", i)
+            print("R: ", Point.generator().mult(i))
+
+def find_candidates():
+    pos = 9
+    for s in range(pos, pos+1):
+        R = Point.generator().mult(s)
+        """
+            Print in this format:
+            {
+                "r": {
+                "x": "3319134467327838892242282581065647627392741625699997741597868808889985014067",
+                "y": "14491680315471636907755602413083290121075139985873852266585959448729481987981"
+                },
+                "s": "4"
+            },
+        """
+        print("{")
+        print("    \"r\": {")
+        print("      \"x\": \"", R.x.n, "\",", sep="")
+        print("      \"y\": \"", R.y.n, "\"", sep="")
+        print("    },")
+        print("    \"s\": \"", s, "\"", sep="")
+        print("  },")
+        print()
