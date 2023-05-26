@@ -145,8 +145,8 @@ def try_find_sig():
             print("R: ", Point.generator().mult(i))
 
 def find_candidates():
-    pos = 9
-    for s in range(pos, pos+1):
+    pos = 0
+    for s in range(pos, pos+10):
         R = Point.generator().mult(s)
         """
             Print in this format:
